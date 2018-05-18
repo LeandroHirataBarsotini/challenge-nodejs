@@ -1,0 +1,208 @@
+swagger: '2.0'
+info:
+  description: >-
+    API para obter informações sobre dispositivos (smartphone ou tablet) de
+    clientes para visualização de streans de vídeo
+  version: 1.0.0
+  title: Dispositivo API
+  termsOfService: ''
+  contact:
+    email: leandrohirata@gmail.com
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+host: challenge.device.com.br
+basePath: /v1
+tags:
+  - name: Dispositivos Móveis
+    description: >-
+      Permite cadastro, alteração e remoção de dispositivos para stream de
+      vídeos
+schemes:
+  - https
+paths:
+  /:
+    get:
+      tags:
+        - Verificação
+      summary: Verifica se o servidor está disponível
+      description: Teste simples para verificar se está disponível
+      operationId: /
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: OK
+          
+  /dispositivo/{usuario}:
+    get:
+      tags:
+        - 'consultar dispositivo, tablet, smartphone'
+      summary: Consulta informações sobre os dispositivos móveis do cliente
+      description: >-
+        API para consultar informações sobre dispositivos dos clientes. 
+        A API recebe o código do usuário a ser pesquisado e retorna uma lista de  Dispositivo (_id, usuarioId, dataInclusao, dispositivoNome e       dispositivoModelo) encontrados no formato json.
+      operationId: consultarDispositivos
+      produces:
+        - application/json
+      parameters:
+        - name: usuario
+          in: path
+          required: true
+          type: string
+          description: Código do usuário
+      responses:
+        '200':
+          description: ok
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Dispositivo'
+              
+  /dispositivo:
+    post:
+      tags:
+        - 'adicionar dispositivo, novo dispositivo, tablet, smartphone'
+      summary: Adicionar um dispositivo móvel do cliente
+      description: >-
+        API para cadastrar dispositivos dos clientes. 
+        A API recebe um json com usuarioId e o dispositivo(dispositivoNome, dispositivoModelo), retornando um json (RetornoOperacao) com a resposta da execução.
+        A API só permite inserir novos dispositívos quando o usuário possuir menos de três dispositivos já cadastrados. Ao adicionar o novo dispotivo, a api deve inserir a data corrente no campo dataInclusao para de controle de       ultima alteracao dos dispostivos
+      operationId: adicionardispositivo
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: Envio de dados do novo dispositivo
+          required: true
+          schema:
+            $ref: '#/definitions/NovoDispositivo'
+      responses:
+        '200':
+          description: ok
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/RetornoOperacao'
+    put:
+      tags:
+        - 'alterar dispositivo, atualizar dispositivo, tablet, smartphone'
+      summary: Alterar o nome de um dispositivo móvel do cliente
+      description: >-
+        API para alterar o nome de um dispositivo do cliente. 
+        A API recebe um json com o dispositivo(dispositivoId, dispositivoNome), retornando um json (RetornoOperacao) com a resposta da execução
+      operationId: alterardispostivo
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: Novo nome para dispositivo já cadastrado
+          required: true
+          schema:
+            $ref: '#/definitions/AlterarDispositivo'
+      responses:
+        '200':
+          description: ok
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/RetornoOperacao'
+          
+    delete:
+      tags:
+        - 'excluir dispositivo, remover dispositivo, tablet, smartphone'
+      summary: Remover um dispositivo móvel do cliente
+      description: >-
+        API para remover um dispositivo do cliente. 
+        A API recebe um json com o dispositivo(usuarioId e dispositivoId), retornando um json (RetornoOperacao) com a resposta da execução.
+        A API não permite a exclusão do dispositivo, quando o mesmo for o único dispositivo cadastrado do cliente.
+        A API só permite excluir um dispositivo quando ter passado mais de 30 dias da inclusão/exclusão de qualquer dispositivo.
+      operationId: removerdispostivo
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: Id do dispositivo para exclusão
+          required: true
+          schema:
+            $ref: '#/definitions/RemoverDispositivo'
+      responses:
+        '200':
+          description: ok
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/RetornoOperacao'
+              
+definitions:
+  Dispositivo:
+    type: object
+    properties:
+      _id:
+        type: string
+        description: identificador do dispositivo
+      usuarioId:
+        type: integer
+        format: int64
+        description: identificador do usuário
+      dataInclusao:
+        type: string
+        format: date
+        description: data de inclusão do dispositivo
+      dispositivoNome:
+        type: string
+        description: nome do novo dispositivo
+      dispositivoModelo:
+        type: string
+        description: modelo do dispositivo (Android ou IOS)
+  NovoDispositivo:
+    type: object
+    properties:
+      usuarioId:
+        type: integer
+        format: int64
+        description: identificador do usuário
+      dispositivoNome:
+        type: string
+        description: nome do novo dispositivo
+      dispositivoModelo:
+        type: string
+        description: modelo do dispositivo (Android ou IOS)
+  AlterarDispositivo:
+    type: object
+    properties:
+      _id:
+        type: string
+        description: identificador do dispositivo
+      dispositivoNome:
+        type: string
+        description: novo nome do dispositivo
+  RemoverDispositivo:
+    type: object
+    properties:
+      usuarioId:
+        type: integer
+        format: int64
+        description: identificador do usuário
+      dispositivoId:
+        type: string
+        description: identificador do dispositivo
+  RetornoOperacao:
+    type: object
+    properties:
+      status:
+        type: integer
+        format: int64
+        description: 0 - erro e 1 - ok
+      descricao:
+        type: string
+        description: texto com a mensagem de erro ou sucesso

@@ -1,0 +1,4 @@
+{
+    "DBHost": "mongodb://localhost/devices",
+    "apiPort": 8000
+}
